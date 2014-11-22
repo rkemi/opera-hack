@@ -21,7 +21,7 @@ var KEY = {
 
 var maxWidth = 800;
 var maxHeight = 400;
-var maxJumpHeight = 60;
+var maxJumpHeight = 120;
 var floorLevel = 26;
 
 var players = [];
@@ -64,6 +64,8 @@ function init() {
     
 
     createPlayers(2);
+
+    
  
     function animate() {
         
@@ -80,6 +82,9 @@ function init() {
 
 function calculateMovements() {
     for (var i = 0; i < players.length; i++) {
+        var tempX = players[i].position.x;
+        var tempY = players[i].position.y;
+
         if (players[i].moving !== false) {
             if (players[i].moving === 'left') {
                 if (players[i].position.x > 0) {
@@ -112,6 +117,11 @@ function calculateMovements() {
                 }
             }
         }
+        if (i === playerid) {
+            if (tempX !== players[i].position.x || tempY !== players[i].position.y) {
+                sendPlayerData(playerid,players[0].position.x,players[0].position.y);
+            }
+        }
     }
 }
 
@@ -142,6 +152,8 @@ function onkey(ev, key, pressed) {
             ev.preventDefault(); 
             break;
     }
+    //sendPlayerData(playerid,players[0].position.x,players[0].position.y);
+           
 }
 
 function move(player, direction) {
@@ -158,7 +170,7 @@ function move(player, direction) {
         }
     }
     
-    sendPlayerData(player,players[player].position.x,players[player].position.y);
+   // sendPlayerData(player,players[player].position.x,players[player].position.y);
 }
 
 function sendUpdatedMovement() {
@@ -207,5 +219,6 @@ function createPlayers(number) {
 function updateOtherPlayers(playerData) {
   console.log(playerData);
   players[otherid].position.x = playerData.player.x;
+  players[otherid].position.y = playerData.player.y;
 }
 
