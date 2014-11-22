@@ -19,7 +19,10 @@ var KEY = {
     TILDA:    192
   };
 
-var MAXWIDTH = 800;
+var maxWidth = 800;
+var maxHeight = 400;
+var maxJumpHeight = 60;
+var floorLevel = 26;
 
 var players = [];
 var playerid = 0;
@@ -34,18 +37,35 @@ function init() {
     stage = new PIXI.Stage(0x66FF99);
  
     // create a renderer instance.
-    var renderer = PIXI.autoDetectRenderer(MAXWIDTH, 400);
+    var renderer = PIXI.autoDetectRenderer(maxWidth, maxHeight);
  
     // add the renderer view element to the DOM
     document.body.appendChild(renderer.view);
- 
+
+    var backgroundTexture = PIXI.Texture.fromImage("resources/clouds.jpg");
+    background = new PIXI.TilingSprite(backgroundTexture, maxWidth, maxHeight);
+    stage.addChild(background);
+
+    var floorTexture = PIXI.Texture.fromImage("resources/floor.png");
+    floor = new PIXI.TilingSprite(floorTexture, maxWidth, floorLevel);
+    floor.tileScale.x = 0.125;
+    floor.tileScale.y = 0.125;
+    floor.position.y = maxHeight - floorLevel;
+
+    //floor.scale.y = 0.5;
+    //floor.anchor.y = 380;
+    console.log(floor);
+    stage.addChild(floor);
+
     requestAnimFrame( animate );
 
     createPlayers(2);
  
     function animate() {
- 
+        
+        calculateMovements();
         requestAnimFrame( animate );
+
 
         //bunny.rotation += 0.1;
  
@@ -54,28 +74,67 @@ function init() {
     }
 }
 
-function onKeyDown(event) {
-    event.preventDefault();
-    switch(event.keyCode) {
-        case keys.LEFT:
-            move(-1);
-        case keys.RIGHT:
-            move(1);
+function calculateMovements() {
+    for (var i = 0; i < players.length; i++) {
+        if (players[i].moving !== false) {
+            if (players[i].moving === 'left') {
+                if (players[i].position.x > 0) {
+                    players[i].position.x -= 2;
+                }
+            }
+            else if (players[i].moving === 'right') {
+                if (players[i].position.x < maxWidth) {
+                    players[i].position.x += 2;
+                }
+            }
+        }
+        if (players[i].jump !== false) {
+            if (players[i].jump === 'up') {
+                if (players[i].jumpHeight < maxJumpHeight) {
+                    players[i].position.y -= 3;
+                    players[i].jumpHeight += 3;
+                }
+                else {
+                    players[i].jump = 'down';
+                }
+            }
+            else if (players[i].jump === 'down') {
+                if (players[i].jumpHeight > 0) {
+                    players[i].position.y += 3;
+                    players[i].jumpHeight -= 3;
+                }
+                else {
+                    players[i].jump = false;
+                }
+            }
+        }
     }
 }
 
 function onkey(ev, key, pressed) {
     switch(key) {
         case KEY.LEFT:  
-            move(playerid, 'left');
+            if (pressed) {
+                players[playerid].moving = 'left';
+            }
+            else {
+                players[playerid].moving = false;
+            }
             ev.preventDefault(); 
             break;
         case KEY.RIGHT: 
-            move(playerid, 'right');
+            if (pressed) {
+                players[playerid].moving = 'right';
+            }
+            else {
+                players[playerid].moving = false;
+            }
             ev.preventDefault(); 
             break;
-        case KEY.SPACE: 
-            player.input.jump  = pressed; 
+        case KEY.SPACE:
+            if (players[playerid].jump === false) {
+                players[playerid].jump = 'up';    
+            }
             ev.preventDefault(); 
             break;
     }
@@ -84,14 +143,32 @@ function onkey(ev, key, pressed) {
 function move(player, direction) {
     if (direction === 'left') {
         if (players[player].position.x > 0) {
-            players[player].position.x -= 4;   
+            players[player].moving = 'left';
+            //players[player].position.x -= 4;   
         }
     }
     else if (direction === 'right') {
-        if (players[player].position.x < MAXWIDTH) {
-            players[player].position.x += 4;
+        if (players[player].position.x < maxWidth) {
+            //players[player].position.x += 4;
+            players[player].moving = 'right';
         }
     }
+}
+
+function sendUpdatedMovement() {
+    data = {
+        player: {
+            id : playerid,
+            x : players[playerid].x,
+            y : players[playerid].x
+        }
+    }
+    // send players[playerid]
+}
+
+function updateMovement(player) {
+    players[player.id].position.x = player.x;
+    players[player.id].position.y = player.y;
 }
 
 function createPlayers(number) {
@@ -106,8 +183,12 @@ function createPlayers(number) {
         player.anchor.y = 1.0;
      
         // set the players starting point
-        player.position.x = Math.floor((Math.random() * MAXWIDTH) + 1);
-        player.position.y = 400;
+        player.position.x = Math.floor((Math.random() * maxWidth) + 1);
+        player.position.y = maxHeight - floorLevel;
+
+        player.jumpHeight = 0;
+        player.jump = false;
+        player.moving = false;
 
         players[i] = player;
      
