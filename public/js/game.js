@@ -23,6 +23,7 @@ var MAXWIDTH = 800;
 
 var players = [];
 var playerid = 0;
+var otherid = 1;
 var stage = {};
 
 function init() {
@@ -40,6 +41,10 @@ function init() {
     document.body.appendChild(renderer.view);
  
     requestAnimFrame( animate );
+    
+    connect();
+    
+    decideId();
 
     createPlayers(2);
  
@@ -92,6 +97,8 @@ function move(player, direction) {
             players[player].position.x += 4;
         }
     }
+    
+    sendPlayerData(player,players[player].position.x,players[player].position.y);
 }
 
 function createPlayers(number) {
@@ -113,4 +120,15 @@ function createPlayers(number) {
      
         stage.addChild(player)
     }
+}
+
+function decideId() {
+  registerPlayers();
+  console.log(playerIds)
+  playerid = getPlayersOnline();
+}
+
+function updateOtherPlayers(playerData) {
+  console.log(playerData);
+  players[otherid].position.x = playerData.player.x;
 }
