@@ -67,11 +67,11 @@ function onKeyDown(event) {
 function onkey(ev, key, pressed) {
     switch(key) {
         case KEY.LEFT:  
-            move('left');
+            move(playerid, 'left');
             ev.preventDefault(); 
             break;
         case KEY.RIGHT: 
-            move('right');
+            move(playerid, 'right');
             ev.preventDefault(); 
             break;
         case KEY.SPACE: 
@@ -81,15 +81,15 @@ function onkey(ev, key, pressed) {
     }
 }
 
-function move(direction) {
+function move(player, direction) {
     if (direction === 'left') {
-        if (players[playerid].position.x > 0) {
-            players[playerid].position.x -= 4;   
+        if (players[player].position.x > 0) {
+            players[player].position.x -= 4;   
         }
     }
     else if (direction === 'right') {
-        if (players[playerid].position.x < MAXWIDTH) {
-            players[playerid].position.x += 4;
+        if (players[player].position.x < MAXWIDTH) {
+            players[player].position.x += 4;
         }
     }
 }
